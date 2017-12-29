@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>电工电子学 - Final Project</title>
+
+    <!-- Bootstrap -->
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="./css/jquery-ui.css" rel="stylesheet">
+    <style type="text/css">
+
+    </style>
+  </head>
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">电工电子学</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">平衡电桥</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container" style="margin-top:80px" role="main">
+
+      <!-- Main jumbotron for a primary marketing message or call to action -->
+      <div class="jumbotron">
+
+        <h1>惠斯登电桥</h1>
+        <p>
+        惠斯通电桥（英语：Wheatstone bridge，又称惠斯同电桥、惠斯登电桥）在1833年由塞缪尔·亨特·克里斯蒂发明，1843年由查尔斯·惠斯通改进及推广的一种测量工具。它用来精确测量未知电阻器的电阻，原理与原始的电势差计相近。
+        </p>
+      </div>
+
+      <div class="row">
+
+        <div class="col-md-6" style="text-align: center;">
+          <img src="./img/circuit.png" style="margin: 16px;max-width: 100%">
+        </div>
+        <!-- /.col-md-6 -->
+
+        <div class="col-md-6">
+
+          <div class="alert alert-success" role="alert" style="display: none;">
+            电桥已平衡
+          </div>
+          <!-- /.alert-success -->
+
+          <div class="alert alert-danger" role="alert" style="display: none;">
+            电桥未平衡
+          </div>
+          <!-- /.alert-danger -->
+
+          <div class="col-md-6" style="margin-bottom: 20px;">
+            <div class="input-group">
+              <span class="input-group-addon">电源电压</span>
+              <input type="number" id='input-vol' class="form-control" placeholder="电源电压大小" value="24">
+              <span class="input-group-addon">V</span>
+            </div>
+          </div>
+          <!-- /.col-md-6 -->
+
+          <div class="col-md-6" style="margin-bottom: 20px;">
+            <div class="input-group">
+              <span class="input-group-addon" style="color: red">Rx 阻值</span>
+              <input type="number" id='input-rx' class="form-control" placeholder="Rx电阻大小" value="30">
+              <span class="input-group-addon">Ω</span>
+            </div>
+          </div>
+          <!-- /.col-md-6 -->
+
+          <div class="col-md-6">
+            <div class="input-group">
+              <span class="input-group-addon">R1 阻值</span>
+              <input type="number" id='input-r1' class="form-control" placeholder="R1电阻大小" value="10">
+              <span class="input-group-addon">Ω</span>
+            </div>
+          </div>
+          <!-- /.col-md-6 -->
+
+          <div class="col-md-6">
+            <div class="input-group">
+              <span class="input-group-addon">R3 阻值</span>
+              <input type="number" id='input-r3' class="form-control" placeholder="R3电阻大小" value="50">
+              <span class="input-group-addon">Ω</span>
+            </div>
+          </div>
+          <!-- /.col-md-6 -->
+
+          <div class="col-md-12" style="margin: 20px">
+            <label>R2阻值：<span id="span-slider" style="color: red">0 Ω</span></label>
+            <div id="slider" style="width: 90%;margin: 10px;"></div>
+          </div>
+
+          <div class="col-md-12">
+            <div style="border-top: 1px #eee solid"></div>
+          </div>
+
+          <div id="blk-success" class="col-md-12" style="margin: 20px 0; display: none;">
+            <p style="text-align: center;">
+              Rx待测电阻阻值为
+              <span style="color: red;font-weight: bold;margin: 5px" id="guess-rx">Ω</span>
+            </p>
+          </div>
+
+        </div>
+        <!-- /.col-md-6 -->
+
+
+      </div>
+      <!-- /.row -->
+
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="./js/jquery-1.12.4.js"></script>
+
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="./js/bootstrap.min.js"></script>
+    <script src="./js/jquery-ui.js"></script>
+
+    <script type="text/javascript">
+
+      var val_r2 = 0;
+
+      $(function() {
+        $( "#slider" ).slider({
+          slide: function( event, ui ) {
+            $('#span-slider').html(ui.value + ' Ω')
+            val_r2 = ui.value;
+            check_circuit();
+          }
+        });
+
+        check_circuit();
+      });
+
+      function check_circuit(){
+
+        var val_r1 = $('#input-r1').val();
+        var val_r3 = $('#input-r3').val();
+        var val_rx = $('#input-rx').val();
+
+        var result = val_r2 / val_r1 - val_rx / val_r3;
+        var equal = result == 0 || Math.abs(equal) < 0.05;
+
+        if (equal) {
+          $('.alert-success').show();
+          $('.alert-danger').hide();
+
+          var real_rx = (val_r2 * val_r3) / val_r1;
+          $('#guess-rx').html(real_rx + 'Ω');
+          $('#blk-success').show();
+
+        }else{
+          $('.alert-success').hide();
+          $('.alert-danger').show();
+          $('#blk-success').hide();
+        }
+
+      }
+
+    </script>
+  </body>
+</html>
